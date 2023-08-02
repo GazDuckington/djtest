@@ -1,10 +1,13 @@
+from unicodedata import name
 from django.contrib.admin.sites import method_decorator
 from django.contrib.auth.views import LoginView
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views import View
+import requests
 
-from .firebase import signin_with_email_and_password, firebase_auth_required
+from .firebase import signin_with_email_and_password, firebase_auth_required, signout
 from .redis import redis_control
 
 
@@ -12,10 +15,10 @@ from .redis import redis_control
 class IndexView(View):
     @method_decorator(firebase_auth_required)
     def get(self, request):
-        return JsonResponse({"message": "hello world"})
+        return render(request, "index.html")
 
 
-class LoginBase(View):
+class AuthUser(View):
     def post(self, request):
         email = request.POST.get("email")
         password = request.POST.get("password")
@@ -26,7 +29,7 @@ class LoginBase(View):
             request.session["error"] = "invalid email or password"
             return redirect("login")
         redis_control.set("user_token", res.get("idToken"))
-        return JsonResponse(redis_control.get("user_token"), safe=False)
+        return redirect("index")
 
 
 class UserLogin(LoginView):
@@ -42,4 +45,12 @@ class UserLogin(LoginView):
             context["error"] = error_message
 
         return render(request, "registration/login.html", context)
+
+
+class SignOut(View):
+    def get(self, request):
+        signout()
+        request.session["info"] = "signed out"
+        request.session["error"] = ""
+        return redirect("login")
 

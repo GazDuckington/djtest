@@ -3,11 +3,11 @@
 <h1>Login</h1>
 
 {% if error %}
-<h1 style="color: red;">{{ error }}</h1>
+	<h1 style="color: red;">{{ error }}</h1>
 {% endif %}
 
 {% if info %}
-<h1 style="color:blue;">{{ info }}</h1>
+	<h1 style="color:blue;">{{ info }}</h1>
 {% endif %}
 
 <form method="post" action="{% url 'auth' %}">
