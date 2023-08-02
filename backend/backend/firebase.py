@@ -1,3 +1,4 @@
+import time
 from functools import wraps
 from decouple import config
 from django.http import JsonResponse
@@ -34,14 +35,19 @@ def signin_with_email_and_password(email: str, password: str):
 
 
 def firebase_auth_required(f):
+    """Memastikan endpoint hanya dapat diakses jika user sudah login"""
     @wraps(f)
     def _wrapped_view(request, *args, **kwargs):
         authorization_header = request.headers.get('Authorization', '')
 
         try:
             decoded_token = auth.verify_id_token(authorization_header)
-            return f(request, *args, **kwargs)
-        except ValueError as e:
-            return JsonResponse({"error": "Invalid or expired token"}, status=401)
+            if 'exp' in decoded_token and decoded_token['exp'] >= int(time.time()):
+                print("true")
+                return f(request, *args, **kwargs)
+            else:
+                return JsonResponse({"error": "Expired token"}, status=401)
+        except Exception:
+            return JsonResponse({"error": "Invalid token"}, status=401)
 
     return _wrapped_view
