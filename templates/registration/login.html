@@ -2,8 +2,13 @@
 
 <h1>Login</h1>
 
-<form method="post">
+{% if error %}
+<h1 style="color: red;">{{ error }}</h1>
+{% endif %}
+
+<form method="post" action="{% url 'auth' %}">
 	{% csrf_token %}
-	{{ form.as_p }}
+	<input type="text" name="email">
+	<input type="password" name="password">
 	<button type="submit">Login</button>
 </form>
