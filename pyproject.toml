@@ -10,6 +10,7 @@ python = "^3.11"
 django = "^4.2.4"
 firebase-admin = "^6.2.0"
 python-decouple = "^3.8"
+redis = {extras = ["hiredis"], version = "^4.6.0"}
 
 
 [build-system]

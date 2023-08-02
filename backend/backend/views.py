@@ -2,11 +2,10 @@ from django.contrib.admin.sites import method_decorator
 from django.contrib.auth.views import LoginView
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
 from django.views import View
-from django.contrib.auth.decorators import login_required
 
 from .firebase import signin_with_email_and_password, firebase_auth_required
+from .redis import redis_control
 
 
 # views here
@@ -23,15 +22,24 @@ class LoginBase(View):
 
         res = signin_with_email_and_password(email=email, password=password)
         if res.get("error"):
-            request.session['error'] = res.get("error")
+            request.session["info"] = ""
+            request.session["error"] = "invalid email or password"
             return redirect("login")
-        request.session['id_token'] = res.get('idToken')
-        return JsonResponse(res)
+        redis_control.set("user_token", res.get("idToken"))
+        return JsonResponse(redis_control.get("user_token"), safe=False)
 
 
 class UserLogin(LoginView):
     def get(self, request):
         error_message = request.session.get('error', None)
-        context = {"error": error_message}
+        info_message = request.session.get('info', None)
+
+        context = {
+            "info": info_message
+        }
+
+        if error_message:
+            context["error"] = error_message
+
         return render(request, "registration/login.html", context)
 

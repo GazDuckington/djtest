@@ -6,6 +6,10 @@
 <h1 style="color: red;">{{ error }}</h1>
 {% endif %}
 
+{% if info %}
+<h1 style="color:blue;">{{ info }}</h1>
+{% endif %}
+
 <form method="post" action="{% url 'auth' %}">
 	{% csrf_token %}
 	<input type="text" name="email">
